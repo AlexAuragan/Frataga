@@ -1,7 +1,9 @@
+import umap
 from sentence_transformers import SentenceTransformer
+from transformers import CamembertModel
 import pandas as pd
 import numpy as np
-from sympy.integrals.meijerint_doc import category
+from sklearn.decomposition import PCA
 
 import config
 import pickle
@@ -30,20 +32,23 @@ def make_vector(text : str)-> np.array: #array : liste mais plus efficace pour v
     return vector
 
 
-_umap_model = None
-def init_umap() -> None:
-    global _umap_model
-    with open(os.path.join("umap_models", config.VECTORIZER.split("/")[-1]+f"_{config.NB_DIMENSIONS}.pkl"), "rb") as f:
-        _umap_model = pickle.load(f)
+def init_reduce_dims_model() -> umap.UMAP | PCA:
+    if config.DIMENSIONS_REDUCTION_METHOD == config.DimensionsReductionMethods.umap:
+        # "rb" comme "read bytes", on lit les fichiers sous format bytes.
+        with open(os.path.join("umap_models", config.VECTORIZER.split("/")[-1]+f"_{config.NB_DIMENSIONS}.pkl"), "rb") as f:
+            return pickle.load(f) # Return UMAP model
+    elif config.DIMENSIONS_REDUCTION_METHOD == config.DimensionsReductionMethods.pca:
+        with open(os.path.join("pca_models", config.VECTORIZER.split("/")[-1]+f"_{config.NB_DIMENSIONS}.pkl"), "rb") as f:
+            return pickle.load(f) # Return PCA model
+    raise ValueError(config.DIMENSIONS_REDUCTION_METHOD)
 
-def reduce_input(vector: np.ndarray) -> np.ndarray:
-    global _umap_model
-    return _umap_model.transform(np.array([vector]))
+def reduce_input(vector: np.ndarray, model: umap.UMAP | PCA ) -> np.ndarray:
+    return model.transform(np.array([vector]))
 
 
-def vectorize_input(text:str):
+def vectorize_input(text:str, model: umap.UMAP | PCA):
     vector_input = make_vector(text)
-    reduced_vector = reduce_input(vector_input)[0]
+    reduced_vector = reduce_input(vector_input, model)[0]
     return reduced_vector
 
 
@@ -58,21 +63,20 @@ def distance(vector_1, vector_2) -> float:
 
     vector_1 = np.array(vector_1).reshape(1, -1)  # Reformate en 2D gpt
     vector_2 = np.array(vector_2).reshape(1, -1)  # Reformate en 2D gpt
-    return cosine_similarity(vector_1, vector_2)
+    return 1 - cosine_similarity(vector_1, vector_2)
 
 
     #ouvrir data_format.json avec pandas
-def arch_finder(text:str,vectors_dict:dict):
-    input_reduced_vector=vectorize_input(text)
+def arch_finder(text:str,vectors_dict:dict, model: umap.UMAP | PCA):
+    input_reduced_vector=vectorize_input(text, model)
     min_key=None
     min_distance=None
     for vector in vectors_dict.keys():
         dist = distance(input_reduced_vector,list(vector))
-        print(f"{vectors_dict[tuple(vector)]} | {dist} | {vector}")
         if min_distance is None:
             min_distance = dist
             min_key=vector
-        elif dist > min_distance:
+        elif dist < min_distance:
             min_distance = dist
             min_key=vector
     return vectors_dict[tuple(min_key)]
@@ -86,7 +90,7 @@ def arch_finder(text:str,vectors_dict:dict):
 
 
 if __name__ == '__main__':
-    init_umap()
+    model = init_reduce_dims_model()
     df = pd.read_json("data_format.json").T #.T inverse les lignes et les colones
     #print(df.head())
     #print(df.columns)
@@ -102,5 +106,5 @@ if __name__ == '__main__':
         text=input("Entrer un texte:")
         if text == "exit":
             exit()
-        match = arch_finder(text,vectors_dict)
+        match = arch_finder(text,vectors_dict, model)
         print(f"ton match est {match}")

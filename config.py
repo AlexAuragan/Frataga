@@ -1,4 +1,3 @@
-
 class Vectorizers:
     #  Ce modèle multilingue est efficace pour les tâches de similarité sémantique en français. Il est léger et offre
     #  de bonnes performances générales.
@@ -12,10 +11,15 @@ class Vectorizers:
     # performant pour évaluer la similarité sémantique entre des phrases en français.
     distiluse = "sentence-transformers/distiluse-base-multilingual-cased-v2"
 
-    # Un modèle spécifiquement affiné pour le français, basé sur CamemBERT-large. Il est conçu pour capturer les
+    # Un modèle spécifiquement affiné pour le français, basé sur CamemBERT-base. Il est conçu pour capturer les
     # nuances sémantiques des phrases françaises et est particulièrement adapté aux tâches de similarité
     # sémantique dans cette langue.
-    camembert = "camembert/camembert-large"
+    camembert = "dangvantuan/sentence-camembert-base"
 
-VECTORIZER = Vectorizers.pm_minilm
-NB_DIMENSIONS = 50
+class DimensionsReductionMethods:
+    umap = "umap"
+    pca = "pca"
+
+VECTORIZER = Vectorizers.camembert
+NB_DIMENSIONS = 2
+DIMENSIONS_REDUCTION_METHOD = DimensionsReductionMethods.pca
