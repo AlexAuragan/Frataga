@@ -21,5 +21,5 @@ class DimensionsReductionMethods:
     pca = "pca"
 
 VECTORIZER = Vectorizers.camembert
-NB_DIMENSIONS = 2
+NB_DIMENSIONS = 50
 DIMENSIONS_REDUCTION_METHOD = DimensionsReductionMethods.pca

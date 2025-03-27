@@ -21,7 +21,7 @@ def vectorize_data(input_path : str)-> None:
     df["vector:" + config.VECTORIZER] = None # Gpt
     for arch in df.index:
         data = df.loc[arch]
-        vector = make_vector(make_text(data=data))
+        vector = make_vector(make_text(data=data,arch=arch))
         df.at[arch, "vector:"+config.VECTORIZER] = vector
     vectors = reduce_dims(np.vstack(df["vector:" + config.VECTORIZER].to_numpy()), save = True)
     df[f"vector:{config.VECTORIZER}:reduced:{config.NB_DIMENSIONS}"]=vectors
@@ -89,6 +89,7 @@ def format_xlsx(input_path:str,output_path:str) -> None:
     df["name"]=df["name"].apply(lambda x: x.strip()) #retire les espaces
     df = df.set_index("name")
     df = df.drop(columns=["Tags","Lien image"])
+    df = df.drop(index=["Squelette du Gardien"])
     for arch in df.index :
 
         #Format des catégories
@@ -113,5 +114,5 @@ def format_xlsx(input_path:str,output_path:str) -> None:
 
 
 if __name__ == '__main__':
-    # format_xlsx(input_path="archetypes.xlsx", output_path="data_format.json")
+    format_xlsx(input_path="archetypes.xlsx", output_path="data_format.json")
     vectorize_data(input_path="data_format.json")
