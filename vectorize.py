@@ -11,14 +11,15 @@ import os
 from sklearn.metrics.pairwise import cosine_similarity
 _vectorizer = SentenceTransformer(config.VECTORIZER)
 
-def make_text(data: dict)->str:
+def make_text(data: dict, arch: str)->str:
     """
     on par du principe que les colones sont 'category', 'description_en', 'tags_fr', 'description_fr', 'color',
        'sub_category', 'values'
     :param data: c'est la donnée d'un personnage
+    :param arch: nom du personnage
     :return: renvoie le texte qui se fera vectoriser
     """
-    output = data["category"] + data["description_fr"] + " tags: " +data["tags_fr"]
+    output = (arch * 5) +(data["category"] * 2) + data["description_fr"] + " tags: " + (data["tags_fr"] * 2)
     return output
 
 
@@ -94,8 +95,6 @@ if __name__ == '__main__':
     df = pd.read_json("data_format.json").T #.T inverse les lignes et les colones
     #print(df.head())
     #print(df.columns)
-
-
 
     vectors_dict = {}
     for arch in df.index:
