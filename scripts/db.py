@@ -12,7 +12,6 @@ _project_name = "frataga"
 _bucket_name = "archetypes"
 
 def get_image_path(arch: str) -> str:
-    arch = arch.replace("'", "_")
     arch_dir = os.path.join("images", arch)
     for img in os.listdir(arch_dir):
         if img.endswith(".png"):
@@ -29,21 +28,6 @@ s3 = boto3.client(
     region_name='us-east-1'
 )
 
-def send_to_db(bucket_name: str, project_name: str):
-    """
-    send images that are in folders like
-    images/
-     |_ Archetype_1/
-            |_ image.png
-
-    we do this because we found it's easier to download Midjourney images and put them into corresponding folder
-    than renaming them one by one
-
-    """
-    for folder in os.listdir("images"):
-        for img in os.listdir(os.path.join("images", folder)):
-            if img.endswith(".png"):
-                s3.upload_file(os.path.join("images", folder, img), bucket_name, f"{project_name}/{name_to_key(folder)}.png")
 
 def push_into_db(data_file: str, project_name: str, minio_bucket: str):
     """
@@ -55,15 +39,16 @@ def push_into_db(data_file: str, project_name: str, minio_bucket: str):
     df["id"] = df["name"].apply(name_to_key)
     df["project"] = project_name
     df["minio_key"] = f"{project_name}/" + df["id"] + ".png"
-    for arch in df.index:
-        name = df.loc[arch]["name"]
-        minio_key = df.loc[arch]["minio_key"]
-        s3.upload_file(get_image_path(name), minio_bucket, minio_key)
+    # for arch in df.index:
+    #     name = df.loc[arch]["name"]
+    #     minio_key = df.loc[arch]["minio_key"]
+    #     s3.upload_file(get_image_path(name), minio_bucket, minio_key)
+    #     # TODO add palette here too
     df.set_index("id")
     documents = df.to_dict(orient="records")
     index = client.index("archetypes")
     # task = index.update_documents(documents)
-    task = index.add_documents(documents)
+    task = index.update_documents(documents)
     index.wait_for_task(task.task_uid)
 
 if __name__ == '__main__':

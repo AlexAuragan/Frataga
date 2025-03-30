@@ -1,11 +1,10 @@
 import os
 import boto3
 from botocore.client import Config
-
+from tqdm import tqdm
+import tempfile
+from main import get_palette, find_color_palette
 from scripts.utils import name_to_key
-
-bucket_name = "archetypes"
-project_name = "frataga"
 
 s3 = boto3.client(
     's3',
@@ -16,7 +15,7 @@ s3 = boto3.client(
     region_name='us-east-1'
 )
 
-def send_to_db():
+def send_to_db(bucket_name: str, project_name: str):
     """
     send images that are in folders like
     images/
@@ -27,27 +26,19 @@ def send_to_db():
     than renaming them one by one
 
     """
-    for folder in os.listdir("images"):
+    for folder in tqdm(os.listdir("images")):
         for img in os.listdir(os.path.join("images", folder)):
             if img.endswith(".png"):
-                s3.upload_file(os.path.join("images", folder, img), bucket_name, f"{project_name}/{name_to_key(folder)}.png")
-
-def get_from_db():
-    """
-    Download images like
-    images/
-        |_ archetype_1.png
-
-
-    """
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=f"{project_name}/")
-    for obj in response.get('Contents', []):
-        url = s3.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": bucket_name, "Key": obj["Key"]},
-            ExpiresIn=3600
-        )
+                img_path = os.path.join("images", folder, img)
+                s3.upload_file(img_path, bucket_name, f"{project_name}/{name_to_key(folder)}.png")
+                palette = get_palette(find_color_palette(img_path))
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                    palette.save(tmp.name)
+                    s3.upload_file(tmp.name, bucket_name, f"{project_name}_palette/{name_to_key(folder)}.png")
+                os.remove(tmp.name)
 
 if __name__ == '__main__':
-    # send_to_db()
-    get_from_db()
+    bucket_name = "archetypes"
+    project_name = "frataga"
+
+    send_to_db(bucket_name, project_name)

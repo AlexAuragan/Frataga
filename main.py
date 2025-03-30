@@ -1,14 +1,20 @@
+import concurrent.futures
 import os
 import pandas as pd
 from PIL import Image, ImageDraw
-from Pylette import extract_colors, Color
+from Pylette import extract_colors
 import streamlit as st
 import config
 from scripts.utils import name_to_key
 from vectorize import init_reduce_dims_model, arch_finder
-from database import get_data_from_name, get_image_from_key
+from database import get_data_from_name, get_image_from_key, get_palette_from_key, get_vectors_dict
 from dotenv import load_dotenv
+import sys
 
+# Avoid the issue between streamlit watcher and torch.classes
+sys.modules['torch.classes'].__path__ = []
+
+# Load environment variable
 load_dotenv()
 
 def list_images() -> list[str]:
@@ -45,6 +51,7 @@ def get_palette(colors, padding=5):
     draw = ImageDraw.Draw(img)
 
     for i, color in enumerate(colors):
+        color = tuple(color)
         x0 = padding + i * (cell_width + padding)
         y0 = padding
         x1 = x0 + cell_width
@@ -59,32 +66,30 @@ if __name__ == '__main__':
         model = init_reduce_dims_model()
 
     st.title("DnD archetype search")
-    df = pd.read_json("data_format.json").T
 
-
-    vectors_dict = {}
-    for arch in df.index:
-        value = arch
-        key = df.loc[arch][f"vector:{config.VECTORIZER}:reduced:{config.NB_DIMENSIONS}"]
-        vectors_dict[tuple(key)] = value
-
+    field = f"vector:{config.VECTORIZER}:reduced:{config.NB_DIMENSIONS}"
+    vectors_dict = get_vectors_dict(field)
 
     desc = st.text_input("Prompt", placeholder="J'aime la nature et la musique.")
     with st.spinner(""):
         match = arch_finder(desc, vectors_dict, model)
         key = name_to_key(match)
         data = get_data_from_name(key)
-        img_path = get_image_from_key(data["minio_key"])
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_img = executor.submit(get_image_from_key, data["minio_key"])
+            future_palette = executor.submit(get_palette_from_key, data["minio_key"])
 
-    st.title(match)
+            img_path = future_img.result()
+            palette_path = future_palette.result()
+
+    st.title(data["name"])
     st.image(img_path)
-
-    st.image(os.path.join("palettes", match + ".png"))
+    st.image(palette_path)
     c1, c2  = st.columns(2)
     with c1:
         st.write("Description")
-        st.write(df.loc[match]["description_fr"])
+        st.write(data["description_fr"])
 
     with c2:
         st.write("Tags:")
-        st.write(df.loc[match]["tags_fr"])
+        st.write(data["tags_fr"])

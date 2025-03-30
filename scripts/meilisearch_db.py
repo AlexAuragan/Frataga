@@ -42,4 +42,4 @@ def get_meilisearch(project_name):
 if __name__ == '__main__':
     # push_into_meilisearch("data_format.json", _project_name)
     out = get_meilisearch(_project_name)
-    print(dict(out[0]).get("minio_key"))
+    print(dict(out[0]).get("vector:dangvantuan/sentence-camembert-base:reduced:50"))

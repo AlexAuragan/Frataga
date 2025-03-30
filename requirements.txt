@@ -13,3 +13,4 @@ boto3
 python-dotenv
 requests
 pillow
+tqdm

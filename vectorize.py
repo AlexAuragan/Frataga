@@ -155,7 +155,7 @@ def vectorize_data(input_path: str) -> None:
 
     # Compute full vector for each entry
     for arch in df.index:
-        data = df.loc[arch]
+        data = df.loc[arch].copy()
         data["name"] = arch
         vector_input = make_vector(make_text(data=data))
         df.at[arch, vector_col] = vector_input
