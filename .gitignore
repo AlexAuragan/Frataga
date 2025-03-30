@@ -3,3 +3,11 @@
 *.xlsx
 */*.pkl
 */*.png
+/images/
+/umap_models/
+/tsne_models/
+/pca_models/
+/.env
+/send_in_tabase.py
+/push_local.sh
+/.idea/

@@ -6,3 +6,10 @@ pandas
 openpyxl
 umap-learn
 numpy
+meilisearch
+pylette
+botocore
+boto3
+python-dotenv
+requests
+pillow
