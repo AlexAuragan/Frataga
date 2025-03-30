@@ -10,3 +10,5 @@
 /.env
 /send_in_tabase.py
 /.idea/
+*.pyc
+__pycache__/
