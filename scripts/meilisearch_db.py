@@ -14,7 +14,7 @@ def push_into_meilisearch(data_file: str, project_name: str):
     df["name"] = df.index.to_series()
     df["id"] = df["name"].apply(name_to_key)
     df["project"] = project_name
-    df["minio_key"] = f"{project_name}/" + df["id"] + ".png"
+    df["picture_minio_key"] = f"{project_name}/" + df["id"] + ".png"
 
     df.set_index("id")
     documents = df.to_dict(orient="records")

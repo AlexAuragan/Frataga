@@ -38,7 +38,7 @@ def push_into_db(data_file: str, project_name: str, minio_bucket: str):
     df["name"] = df.index.to_series()
     df["id"] = df["name"].apply(name_to_key)
     df["project"] = project_name
-    df["minio_key"] = f"{project_name}/" + df["id"] + ".png"
+    df["picture_minio_key"] = f"{project_name}/" + df["id"] + ".png"
     # for arch in df.index:
     #     name = df.loc[arch]["name"]
     #     minio_key = df.loc[arch]["minio_key"]

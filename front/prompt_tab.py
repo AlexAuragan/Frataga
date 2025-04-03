@@ -23,8 +23,8 @@ def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"]) -> None:
         key = name_to_key(match)
         data = get_data_from_name(key)
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_img = executor.submit(get_image_from_key, data["minio_key"])
-            future_palette = executor.submit(get_palette_from_key, data["minio_key"])
+            future_img = executor.submit(get_image_from_key, data["picture_minio_key"])
+            future_palette = executor.submit(get_palette_from_key, data["palette_minio_key"])
 
             img_path = future_img.result()
             palette_path = future_palette.result()

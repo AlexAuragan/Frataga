@@ -24,7 +24,7 @@ def get_palette_url_from_key(key: str, bucket_name: str = None):
     bucket_name = bucket_name or _bucket_name
     url = s3.generate_presigned_url(
         "get_object",
-        Params={"Bucket": bucket_name, "Key": key.replace("/", "_palette/", 1)},
+        Params={"Bucket": bucket_name, "Key": key},
         ExpiresIn=3600
     )
     return url
