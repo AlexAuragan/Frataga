@@ -1,12 +1,10 @@
 import concurrent.futures
-from typing import Union, TYPE_CHECKING
 
 import streamlit as st
 
 
 from database import get_data_from_name, get_image_from_key, get_palette_from_key
-from scripts.utils import name_to_key
-from vectorize import arch_finder
+from front.display_archetype import display_archetype
 
 def selection_tab(names_to_keys: dict) -> None:
 
@@ -20,15 +18,7 @@ def selection_tab(names_to_keys: dict) -> None:
             img_path = future_img.result()
             palette_path = future_palette.result()
 
-    st.title(data["name"])
-    st.image(img_path)
-    st.image(palette_path)
-    c1, c2  = st.columns(2)
-    with c1:
-        st.write("Description")
-        st.write(data["description_fr"])
-
-    with c2:
-        st.write("Tags:")
-        st.write(data["tags_fr"])
-
+    name = data["name"]
+    description = data["description_fr"]
+    tags = data["tags_fr"]
+    display_archetype(name=name, description=description, tags=tags, img_path=img_path, palette_path=palette_path)

@@ -110,5 +110,6 @@ def get_data_from_name(name: str, meilisearch_index: str = None) -> dict:
     meilisearch_index = meilisearch_index or _meilisearch_index
     client = meilisearch.Client(os.environ.get("MEILISEARCH_URL"), os.environ.get("MEILISEARCH_PASSWORD"))
     index = client.index(meilisearch_index)
+
     return dict(index.get_document(name))
 

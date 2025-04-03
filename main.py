@@ -15,6 +15,8 @@ sys.modules['torch.classes'].__path__ = []
 # Load environment variable
 load_dotenv()
 
+st.set_page_config(layout="wide")
+
 def footer():
     with bottom():
         c1, c2, c3, c4 = st.columns(4)
@@ -33,6 +35,9 @@ if __name__ == '__main__':
         model = init_reduce_dims_model()
 
     t1, t2 = st.tabs(["Recherche", "Selection"])
+    footer()
+
+
     with t1:
         field = f"vector:{config.VECTORIZER}:reduced:{config.NB_DIMENSIONS}"
         vectors_dict = get_db_dict(field)
@@ -41,4 +46,3 @@ if __name__ == '__main__':
     with t2:
         keys_to_names = get_db_dict("name")
         selection_tab(keys_to_names)
-    footer()
