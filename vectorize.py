@@ -7,6 +7,13 @@ import pandas as pd
 import numpy as np
 import config
 from typing import TYPE_CHECKING, Union
+import torch
+import random
+
+torch.manual_seed(42)
+np.random.seed(42)
+random.seed(42)
+
 
 if TYPE_CHECKING:
     from umap import UMAP
@@ -26,7 +33,7 @@ def _get_model_filename(model_type: str) -> str:
 
 def _reduce_dims_umap(embeddings: np.ndarray, save: bool = True) -> list[np.ndarray]:
     from umap import UMAP
-    umap_model = UMAP(n_components=config.NB_DIMENSIONS)
+    umap_model = UMAP(n_components=config.NB_DIMENSIONS, random_state=42)
     reduced_embeddings = umap_model.fit_transform(embeddings)
     if save:
         with open(_get_model_filename("umap"), "wb") as f:
