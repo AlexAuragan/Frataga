@@ -47,7 +47,7 @@ def push_into_db(data_file: str, project_name: str, minio_bucket: str):
     df.set_index("id")
     documents = df.to_dict(orient="records")
     index = client.index("archetypes")
-    # task = index.update_documents(documents)
+    # task = index.add_documents(documents)
     task = index.update_documents(documents)
     index.wait_for_task(task.task_uid)
 

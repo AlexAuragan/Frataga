@@ -78,7 +78,7 @@ def get_all_archetypes(meilisearch_index: str = None) -> set[str]:
     return all_keys
 
 @lru_cache()
-def get_vectors_dict(field: str, meilisearch_index: str = None):
+def get_db_dict(field: str, meilisearch_index: str = None):
     def field_to_doc_generator(batch_size=100):
         offset = 0
         while True:
@@ -89,7 +89,10 @@ def get_vectors_dict(field: str, meilisearch_index: str = None):
             for doc in documents:
                 doc = dict(doc)
                 if field in doc:
-                    yield {tuple(doc[field]): doc["id"]}
+                    key = doc[field]
+                    if isinstance(key, list):
+                        key = tuple(key)
+                    yield {key: doc["id"]}
                 else:
                     raise KeyError(f"Field '{field}' not found in document: {doc}")
 
@@ -100,10 +103,8 @@ def get_vectors_dict(field: str, meilisearch_index: str = None):
     field_dict = dict()
     for new_keys in field_to_doc_generator():
         for key, val in new_keys.items():
-            print(val, key)
             field_dict[key] = val
     return field_dict
-
 
 def get_data_from_name(name: str, meilisearch_index: str = None) -> dict:
     meilisearch_index = meilisearch_index or _meilisearch_index

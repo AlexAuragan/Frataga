@@ -1,9 +1,11 @@
 import os
 import boto3
+from PIL import Image, ImageDraw
 from botocore.client import Config
 from tqdm import tqdm
 import tempfile
-from main import get_palette, find_color_palette
+from Pylette import extract_colors
+
 from scripts.utils import name_to_key
 
 s3 = boto3.client(
@@ -14,8 +16,36 @@ s3 = boto3.client(
     config=Config(signature_version='s3v4'),
     region_name='us-east-1'
 )
+def find_color_palette(image_path: str) -> list[tuple[int, int, int]]:
+    return [extract_colors(image=image_path, palette_size=8)[i].rgb for i in range(8)]
+def get_palette(colors, padding=5):
+    """
+    Save a color palette as a PNG image.
 
-def send_to_db(bucket_name: str, project_name: str):
+    Parameters:
+        colors (list of array-like): List of RGB colors (e.g., [array([R,G,B]), ...])
+
+        padding (int): Padding between color blocks.
+    """
+    width = 1024
+    cell_width = int((width - padding) / len(colors) - padding)
+    cell_height = 128
+    height = cell_height + 2 * padding
+
+    img = Image.new("RGB", (width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img)
+
+    for i, color in enumerate(colors):
+        color = tuple(color)
+        x0 = padding + i * (cell_width + padding)
+        y0 = padding
+        x1 = x0 + cell_width
+        y1 = y0 + cell_height
+        draw.rectangle([x0, y0, x1, y1], fill=color)
+
+    return img
+
+def send_to_db(bucket_name: str, series_name: str):
     """
     send images that are in folders like
     images/
@@ -30,15 +60,15 @@ def send_to_db(bucket_name: str, project_name: str):
         for img in os.listdir(os.path.join("images", folder)):
             if img.endswith(".png"):
                 img_path = os.path.join("images", folder, img)
-                s3.upload_file(img_path, bucket_name, f"{project_name}/{name_to_key(folder)}.png")
+                s3.upload_file(img_path, bucket_name, f"{series_name}/{name_to_key(folder)}.png")
                 palette = get_palette(find_color_palette(img_path))
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
                     palette.save(tmp.name)
-                    s3.upload_file(tmp.name, bucket_name, f"{project_name}_palette/{name_to_key(folder)}.png")
+                    s3.upload_file(tmp.name, bucket_name, f"{series_name}_palette/{name_to_key(folder)}.png")
                 os.remove(tmp.name)
 
 if __name__ == '__main__':
-    bucket_name = "archetypes"
-    project_name = "frataga"
+    _bucket_name = "archetypes"
+    _series_name = "frataga"
 
-    send_to_db(bucket_name, project_name)
+    send_to_db(_bucket_name, _series_name)

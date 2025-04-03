@@ -12,3 +12,4 @@
 /.idea/
 *.pyc
 __pycache__/
+/.streamlit/config.toml
