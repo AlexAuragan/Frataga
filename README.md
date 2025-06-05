@@ -46,6 +46,6 @@ le vecteur de notre base de données le plus proche.
 
 ## Roadmap
 * [ ] Rajouter des éléments de contextes sur la page streamlit
-* [ ] Ajouter une page pour parcourir tous les archetypes
+* [x] Ajouter une page pour parcourir tous les archetypes
 * [ ] Ajouter d'autres moyens de trouver un archetypes, comme des tests de personnalités
 * [ ] Ajouter d'autres sets d'archetypes, comme les classes officielles de DnD

@@ -13,3 +13,5 @@
 *.pyc
 __pycache__/
 /.streamlit/config.toml
+/format.py
+/init.sh
