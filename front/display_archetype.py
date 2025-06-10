@@ -13,6 +13,6 @@ def display_archetype(name: str, img_path: str | Path, palette_path: str | Path,
 
 
     with c2:
-        st.write("Description")
+        st.write("**Description**")
         st.write(description)
-        tagger_component("Tag:  \n", tags)
+        tagger_component("**Tags:**  \n", tags)

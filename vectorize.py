@@ -148,7 +148,6 @@ def arch_finder(text: str, vectors_dict: dict[tuple[float], str], model: Union["
 
     for vector in vectors_dict:
         dist = distance(input_reduced_vector, list(vector))
-        print(dist, vectors_dict[vector])
         if min_distance is None or dist < min_distance:
             min_distance = dist
             min_key = vector

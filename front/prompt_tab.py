@@ -1,8 +1,8 @@
 import concurrent.futures
+import random
 from typing import Union, TYPE_CHECKING
 from random import sample
 import streamlit as st
-
 
 from database import get_data_from_name, get_image_from_key, get_palette_from_key
 from scripts.utils import name_to_key
@@ -25,9 +25,22 @@ demo_prompts = [
     "Je suis tellement sombre que j'ai un corbeau de compagnie.",
     "Je veux découvrir tous les secrets du désert.",
 ]
+def next_demo_prompt():
+    st.session_state["demo_id"] = st.session_state.get("demo_id", random.randint(0, len(demo_prompts))) + 1
+
+@st.fragment
 def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"]) -> None:
-    sample_prompt = sample(demo_prompts, 1)[0]
-    desc = st.text_input("Prompt", placeholder=sample_prompt) or sample_prompt
+    if "demo_id" not in st.session_state:
+        st.session_state["demo_id"] = random.randint(0, len(demo_prompts))
+
+    demo_id = st.session_state["demo_id"]
+    c1, c2 = st.columns([7, 1])
+    with c1:
+        desc = st.text_input("Prompt", placeholder=demo_prompts[demo_id % len(demo_prompts)]) or demo_prompts[demo_id % len(demo_prompts)]
+    with c2:
+        st.text("")
+        st.text("")
+        st.button(label=":material/refresh:", on_click=next_demo_prompt)
     with st.expander("Info:",expanded=False):
         st.text("Cette application a pour but de trouver le personnage qui correspond le mieux à votre prompte !\n"
                 "Entrez une phrase pour décrire votre personnage et découvrez ce que notre IA à trouvé.\n\n"

@@ -6,6 +6,7 @@ import streamlit as st
 from database import get_data_from_name, get_image_from_key, get_palette_from_key
 from front.display_archetype import display_archetype
 
+@st.fragment
 def selection_tab(names_to_keys: dict) -> None:
 
     name = st.selectbox("Archetypes",options=names_to_keys.keys())
