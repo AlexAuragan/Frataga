@@ -36,7 +36,12 @@ def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"]) -> None:
     demo_id = st.session_state["demo_id"]
     c1, c2 = st.columns([7, 1])
     with c1:
-        desc = st.text_input("Prompt", placeholder=demo_prompts[demo_id % len(demo_prompts)]) or demo_prompts[demo_id % len(demo_prompts)]
+        desc = st.text_input(
+            "Prompt",
+            placeholder=demo_prompts[demo_id % len(demo_prompts)],
+            help="Le prompt peut prendre la forme d'une description ou d'une réplique, inspirez-vous des exemples et "
+                 "n'hésitez pas à explorer !"
+        ) or demo_prompts[demo_id % len(demo_prompts)]
     with c2:
         st.text("")
         st.text("")
