@@ -15,6 +15,8 @@ def push_into_meilisearch(data_file: str, project_name: str):
     df["id"] = df["name"].apply(name_to_key)
     df["project"] = project_name
     df["picture_minio_key"] = f"{project_name}/" + df["id"] + ".png"
+    df["palette_minio_key"] = f"{project_name}_palette/" + df["id"] + ".png"
+    df["tags_fr"] = df["tags_fr"].apply(lambda x: [y.strip() for y in x.split(",")])
 
     df.set_index("id")
     documents = df.to_dict(orient="records")
@@ -40,5 +42,5 @@ def get_meilisearch(project_name):
     return all_docs
 
 if __name__ == '__main__':
-    # push_into_meilisearch("data_format.json", _project_name)
-    out = get_meilisearch(_project_name)
+    push_into_meilisearch("data_format.json", _project_name)
+    # out = get_meilisearch(_project_name)

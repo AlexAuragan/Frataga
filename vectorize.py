@@ -99,7 +99,9 @@ def reduce_input(vector: np.ndarray, model: Union["UMAP", "PCA"]) -> np.ndarray:
     :param model: The dimensionality reduction model.
     :return: The reduced vector in NumPy array format.
     """
-    return model.transform(np.array([vector]))
+    reduced = model.transform(np.array([vector]))
+    reduced /= np.linalg.norm(reduced)
+    return reduced
 
 
 def vectorize_input(text: str, model: Union["UMAP", "PCA"]) -> np.ndarray:
@@ -123,6 +125,9 @@ def distance(vec_a: list[float] | np.ndarray, vec_b: list[float] | np.ndarray) -
     :param vec_b: Second vector.
     :return: Cosine distance as float.
     """
+
+    vec_a /= np.linalg.norm(vec_a)
+    vec_b /= np.linalg.norm(vec_b)
     v1 = np.array(vec_a).reshape(1, -1)
     v2 = np.array(vec_b).reshape(1, -1)
     return 1 - cosine_similarity(v1, v2)
@@ -143,6 +148,7 @@ def arch_finder(text: str, vectors_dict: dict[tuple[float], str], model: Union["
 
     for vector in vectors_dict:
         dist = distance(input_reduced_vector, list(vector))
+        print(dist, vectors_dict[vector])
         if min_distance is None or dist < min_distance:
             min_distance = dist
             min_key = vector
@@ -165,6 +171,7 @@ def vectorize_data(input_path: str) -> None:
         data = df.loc[arch].copy()
         data["name"] = arch
         vector_input = make_vector(make_text(data=data))
+        vector_input /= np.linalg.norm(vector_input)
         df.at[arch, vector_col] = vector_input
 
     # Reduce all embeddings and store them

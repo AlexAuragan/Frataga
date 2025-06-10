@@ -1,6 +1,6 @@
 import concurrent.futures
 from typing import Union, TYPE_CHECKING
-
+from random import sample
 import streamlit as st
 
 
@@ -13,8 +13,21 @@ if TYPE_CHECKING:
     from umap import UMAP
     from sklearn.decomposition import PCA
 
+demo_prompts = [
+    "J'aime la nature et la musique.",
+    "J'aime la vitesse et la discretion.",
+    "J'aime la terre et le travail bien fait.",
+    "J'aime danser et manger !",
+    "J'aime explorer la nature",
+    "Brûlez dans les Enfers !",
+    "Je manipule mes ennemis.",
+    "J'ai beaucoup trop souffert pour arrêter de me battre.",
+    "Je suis tellement sombre que j'ai un corbeau de compagnie.",
+    "Je veux découvrir tous les secrets du désert.",
+]
 def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"]) -> None:
-    desc = st.text_input("Prompt", placeholder="J'aime la nature et la musique.")
+    sample_prompt = sample(demo_prompts, 1)[0]
+    desc = st.text_input("Prompt", placeholder=sample_prompt) or sample_prompt
     with st.expander("Info:",expanded=False):
         st.text("Cette application a pour but de trouver le personnage qui correspond le mieux à votre prompte !\n"
                 "Entrez une phrase pour décrire votre personnage et découvrez ce que notre IA à trouvé.\n\n"
