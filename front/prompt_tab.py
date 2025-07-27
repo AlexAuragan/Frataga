@@ -54,7 +54,7 @@ def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"], collection: str)
             placeholder=demo_prompts[collection][demo_id % len(demo_prompts)],
             help="Le prompt peut prendre la forme d'une description ou d'une réplique, inspirez-vous des exemples et "
                  "n'hésitez pas à explorer !"
-        ) or demo_prompts[demo_id % len(demo_prompts[collection])]
+        ) or demo_prompts[collection][demo_id % len(demo_prompts[collection])]
     with c2:
         st.text("")
         st.text("")
