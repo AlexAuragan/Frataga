@@ -15,7 +15,7 @@ sys.modules['torch.classes'].__path__ = []
 # Load environment variable
 load_dotenv()
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="Frataga")
 
 def footer():
     with bottom():
