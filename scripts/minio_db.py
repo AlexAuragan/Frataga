@@ -18,6 +18,7 @@ s3 = boto3.client(
 )
 def find_color_palette(image_path: str) -> list[tuple[int, int, int]]:
     return [extract_colors(image=image_path, palette_size=8)[i].rgb for i in range(8)]
+
 def get_palette(colors, padding=5):
     """
     Save a color palette as a PNG image.
@@ -56,19 +57,20 @@ def send_to_db(bucket_name: str, series_name: str):
     than renaming them one by one
 
     """
-    for folder in tqdm(os.listdir("images")):
-        for img in os.listdir(os.path.join("images", folder)):
-            if img.endswith(".png"):
-                img_path = os.path.join("images", folder, img)
-                s3.upload_file(img_path, bucket_name, f"{series_name}/{name_to_key(folder)}.png")
-                palette = get_palette(find_color_palette(img_path))
-                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-                    palette.save(tmp.name)
-                    s3.upload_file(tmp.name, bucket_name, f"{series_name}_palette/{name_to_key(folder)}.png")
-                os.remove(tmp.name)
+    # for folder in tqdm(os.listdir("images")):
+    for img in os.listdir(os.path.join("images")):
+        key = img.split(".")[0]
+        if img.endswith(".png"):
+            img_path = os.path.join("images", img)
+            s3.upload_file(img_path, bucket_name, f"{series_name}/{key}.png")
+            palette = get_palette(find_color_palette(img_path))
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                palette.save(tmp.name)
+                s3.upload_file(tmp.name, bucket_name, f"{series_name}_palette/{key}.png")
+            os.remove(tmp.name)
 
 if __name__ == '__main__':
     _bucket_name = "archetypes"
-    _series_name = "frataga"
+    _series_name = "greek_gods"
 
     send_to_db(_bucket_name, _series_name)

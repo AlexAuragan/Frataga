@@ -1,4 +1,5 @@
 import os
+import streamlit as st
 import boto3
 from botocore.client import Config
 import meilisearch
@@ -39,18 +40,26 @@ def get_url_from_key(key: str, bucket_name: str = None):
     )
     return url
 
-@lru_cache(maxsize=64)
+
+@st.cache_resource(show_spinner=False)
 def get_image_from_key(key: str):
+    if "images" not in st.session_state:
+        st.session_state["images"] = {}
+    if key in st.session_state["images"]:
+        return st.session_state["images"][key]
     url = get_url_from_key(key)
     response = requests.get(url)
     return Image.open(BytesIO(response.content))
 
-@lru_cache(maxsize=64)
+
 def get_palette_from_key(key: str):
+    if "palettes" not in st.session_state:
+        st.session_state["palettes"] = {}
+    if key in st.session_state["palettes"]:
+        return st.session_state["palettes"][key]
     url = get_palette_url_from_key(key)
     response = requests.get(url)
     return Image.open(BytesIO(response.content))
-
 
 
 def get_all_archetypes(meilisearch_index: str = None) -> set[str]:
@@ -78,7 +87,7 @@ def get_all_archetypes(meilisearch_index: str = None) -> set[str]:
     return all_keys
 
 @lru_cache()
-def get_db_dict(field: str, meilisearch_index: str = None):
+def get_db_dict(field: str, collection_name:str, meilisearch_index: str = None):
     def field_to_doc_generator(batch_size=100):
         offset = 0
         while True:
@@ -88,6 +97,10 @@ def get_db_dict(field: str, meilisearch_index: str = None):
 
             for doc in documents:
                 doc = dict(doc)
+                collection = doc["project"]
+
+                if collection != collection_name:
+                    continue
                 if field in doc:
                     key = doc[field]
                     if isinstance(key, list):

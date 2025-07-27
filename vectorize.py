@@ -27,26 +27,26 @@ _vectorizer = SentenceTransformer(config.VECTORIZER)
 _df_config = tomllib.loads(open("fields.toml", "r").read())
 
 
-def _get_model_filename(model_type: str) -> str:
+def _get_model_filename(model_type: str, collection_name: str) -> str:
     encoder = config.VECTORIZER.split("/")[-1]
-    return os.path.join(f"{model_type}_models", f"{encoder}_{config.NB_DIMENSIONS}.pkl")
+    return os.path.join(f"{model_type}_models", f"{encoder}_{config.NB_DIMENSIONS[collection_name]}-{collection_name}.pkl")
 
-def _reduce_dims_umap(embeddings: np.ndarray, save: bool = True) -> list[np.ndarray]:
+def _reduce_dims_umap(embeddings: np.ndarray, collection_name: str, save: bool = True) -> list[np.ndarray]:
     from umap import UMAP
-    umap_model = UMAP(n_components=config.NB_DIMENSIONS, random_state=42)
+    umap_model = UMAP(n_components=config.NB_DIMENSIONS[collection_name], random_state=42)
     reduced_embeddings = umap_model.fit_transform(embeddings)
     if save:
-        with open(_get_model_filename("umap"), "wb") as f:
+        with open(_get_model_filename("umap", collection_name), "wb") as f:
             pickle.dump(umap_model, f)
     return reduced_embeddings.tolist()
 
 
-def _reduce_dims_pca(embeddings: np.ndarray, save: bool = True) -> list[np.ndarray]:
+def _reduce_dims_pca(embeddings: np.ndarray, collection_name: str, save: bool = True) -> list[np.ndarray]:
     from sklearn.decomposition import PCA
-    pca_model = PCA(n_components=config.NB_DIMENSIONS)
+    pca_model = PCA(n_components=config.NB_DIMENSIONS[collection_name])
     reduced_embeddings = pca_model.fit_transform(embeddings)
     if save:
-        with open(_get_model_filename("pca"), "wb") as f:
+        with open(_get_model_filename("pca", collection_name), "wb") as f:
             pickle.dump(pca_model, f)
     return reduced_embeddings.tolist()
 
@@ -75,7 +75,7 @@ def make_vector(text: str) -> np.ndarray:
     return vector_input
 
 
-def init_reduce_dims_model() -> Union["UMAP", "PCA"]:
+def init_reduce_dims_model(collection_name: str) -> Union["UMAP", "PCA"]:
     """
     Load the appropriate dimension reduction model from disk, based on config.
 
@@ -83,10 +83,10 @@ def init_reduce_dims_model() -> Union["UMAP", "PCA"]:
     """
     method = config.DIMENSIONS_REDUCTION_METHOD
     if method == config.DimensionsReductionMethods.umap:
-        with open(_get_model_filename("umap"), "rb") as f:
+        with open(_get_model_filename("umap", collection_name), "rb") as f:
             return pickle.load(f)
     elif method == config.DimensionsReductionMethods.pca:
-        with open(_get_model_filename("pca"), "rb") as f:
+        with open(_get_model_filename("pca", collection_name), "rb") as f:
             return pickle.load(f)
     raise ValueError(method)
 
@@ -153,48 +153,3 @@ def arch_finder(text: str, vectors_dict: dict[tuple[float], str], model: Union["
             min_key = vector
 
     return vectors_dict[tuple(min_key)]
-
-
-def vectorize_data(input_path: str) -> None:
-    """
-    Vectorize and store reduced embeddings for all entries in a JSON data file.
-
-    :param input_path: Path to the input JSON file containing archetypes.
-    """
-    df: pd.DataFrame = pd.read_json(input_path).T
-    vector_col = f"vector:{config.VECTORIZER}"
-    df[vector_col] = None
-
-    # Compute full vector for each entry
-    for arch in df.index:
-        data = df.loc[arch].copy()
-        data["name"] = arch
-        vector_input = make_vector(make_text(data=data))
-        vector_input /= np.linalg.norm(vector_input)
-        df.at[arch, vector_col] = vector_input
-
-    # Reduce all embeddings and store them
-    reduced_vectors = reduce_dims(np.vstack(df[vector_col].to_numpy()))
-    df[f"{vector_col}:reduced:{config.NB_DIMENSIONS}"] = reduced_vectors
-
-    df.T.to_json(input_path, indent=4, force_ascii=False)
-
-
-def reduce_dims(embeddings: np.ndarray) -> list[np.ndarray]:
-    """
-    Reduce dimensions of a list of embeddings using the method defined in config.
-
-    :param embeddings: 2D array of shape (n_samples, embedding_dim).
-    :return: List of reduced embeddings, each of shape (NB_DIMENSIONS,).
-    """
-    method = config.DIMENSIONS_REDUCTION_METHOD
-    if method == config.DimensionsReductionMethods.umap:
-        return _reduce_dims_umap(embeddings)
-    elif method == config.DimensionsReductionMethods.pca:
-        return _reduce_dims_pca(embeddings)
-
-    raise ValueError("Unknown dimensions reduction method", method)
-
-
-if __name__ == '__main__':
-    vectorize_data(input_path="data_format.json")
