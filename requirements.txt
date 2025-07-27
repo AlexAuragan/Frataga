@@ -3,7 +3,7 @@ streamlit==1.44.0
 streamlit-extras==0.6.0
 
 # Embeddings & NLP
-sentence-transformers==2.2.2
+sentence-transformers>=3.0.1
 tiktoken==0.9.0
 
 # Data processing
