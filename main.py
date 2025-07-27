@@ -43,7 +43,7 @@ if __name__ == '__main__':
         field = f"vector:{config.VECTORIZER}:reduced:{config.NB_DIMENSIONS[collection]}"
         vectors_dict = get_db_dict(field, collection)
         assert vectors_dict
-        prompt_tab(vectors_dict=vectors_dict, model=model)
+        prompt_tab(vectors_dict=vectors_dict, model=model, collection=collection)
 
     with t2:
         keys_to_names = get_db_dict("name", collection)

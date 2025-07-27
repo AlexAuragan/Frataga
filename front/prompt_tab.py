@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from umap import UMAP
     from sklearn.decomposition import PCA
 
-demo_prompts = [
+demo_prompts = {"frataga": [
     "J'aime la nature et la musique.",
     "J'aime la vitesse et la discretion.",
     "J'aime la terre et le travail bien fait.",
@@ -24,24 +24,37 @@ demo_prompts = [
     "J'ai beaucoup trop souffert pour arrêter de me battre.",
     "Je suis tellement sombre que j'ai un corbeau de compagnie.",
     "Je veux découvrir tous les secrets du désert.",
-]
-def next_demo_prompt():
-    st.session_state["demo_id"] = st.session_state.get("demo_id", random.randint(0, len(demo_prompts))) + 1
+],
+    "greek_gods": [
+        "J'aime l'océan et ses mystères infinis.",
+        "J'aime la guerre, le sang et la gloire.",
+        "J'aime la lumière, l'art et la vérité.",
+        "J'aime les ruses et les mensonges élégants." ,
+        "J'aime la sagesse et les stratégies parfaites.",
+        "J'aime les fêtes, le vin et la folie." ,
+        "J'aime les flammes et la forge.",
+        "J'aime l’amour et tout ce qui est beau.",
+        "J'aime protéger la famille et la maison.",
+        "J'aime la nature sauvage et la chasse." ,
+    ]
+}
+def next_demo_prompt(collection: str):
+    st.session_state["demo_id"] = st.session_state.get("demo_id", random.randint(0, len(demo_prompts[collection]))) + 1
 
 @st.fragment
-def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"]) -> None:
+def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"], collection: str) -> None:
     if "demo_id" not in st.session_state:
-        st.session_state["demo_id"] = random.randint(0, len(demo_prompts))
+        st.session_state["demo_id"] = random.randint(0, len(demo_prompts[collection]))
 
     demo_id = st.session_state["demo_id"]
     c1, c2 = st.columns([7, 1])
     with c1:
         desc = st.text_input(
             "Prompt",
-            placeholder=demo_prompts[demo_id % len(demo_prompts)],
+            placeholder=demo_prompts[collection][demo_id % len(demo_prompts)],
             help="Le prompt peut prendre la forme d'une description ou d'une réplique, inspirez-vous des exemples et "
                  "n'hésitez pas à explorer !"
-        ) or demo_prompts[demo_id % len(demo_prompts)]
+        ) or demo_prompts[demo_id % len(demo_prompts[collection])]
     with c2:
         st.text("")
         st.text("")
