@@ -75,7 +75,7 @@ def make_vector(text: str) -> np.ndarray:
     return vector_input
 
 
-def init_reduce_dims_model(collection_name: str) -> Union["UMAP", "PCA"]:
+def init_reduce_dims_model(collection_name: str) -> Union["UMAP", "PCA", None]:
     """
     Load the appropriate dimension reduction model from disk, based on config.
 
@@ -88,10 +88,12 @@ def init_reduce_dims_model(collection_name: str) -> Union["UMAP", "PCA"]:
     elif method == config.DimensionsReductionMethods.pca:
         with open(_get_model_filename("pca", collection_name), "rb") as f:
             return pickle.load(f)
+    elif method == config.DimensionsReductionMethods.none:
+        return None
     raise ValueError(method)
 
 
-def reduce_input(vector: np.ndarray, model: Union["UMAP", "PCA"]) -> np.ndarray:
+def reduce_input(vector: np.ndarray, model: Union["UMAP", "PCA", None]) -> np.ndarray:
     """
     Reduce a single high-dimensional vector using the given UMAP/PCA model.
 
@@ -99,12 +101,15 @@ def reduce_input(vector: np.ndarray, model: Union["UMAP", "PCA"]) -> np.ndarray:
     :param model: The dimensionality reduction model.
     :return: The reduced vector in NumPy array format.
     """
-    reduced = model.transform(np.array([vector]))
+    if model is None:
+        reduced = vector
+    else:
+        reduced = model.transform(np.array([vector]))[0]
     reduced /= np.linalg.norm(reduced)
     return reduced
 
 
-def vectorize_input(text: str, model: Union["UMAP", "PCA"]) -> np.ndarray:
+def vectorize_input(text: str, model: Union["UMAP", "PCA", None]) -> np.ndarray:
     """
     Convert input text to its reduced vector representation.
 
@@ -112,8 +117,9 @@ def vectorize_input(text: str, model: Union["UMAP", "PCA"]) -> np.ndarray:
     :param model: Dimension reduction model (UMAP or PCA).
     :return: A single reduced vector.
     """
+
     vector_input = make_vector(text)
-    reduced_vector = reduce_input(vector_input, model)[0]
+    reduced_vector = reduce_input(vector_input, model)
     return reduced_vector
 
 
@@ -133,7 +139,7 @@ def distance(vec_a: list[float] | np.ndarray, vec_b: list[float] | np.ndarray) -
     return 1 - cosine_similarity(v1, v2)
 
 
-def arch_finder(text: str, vectors_dict: dict[tuple[float], str], model: Union["UMAP", "PCA"]) -> str:
+def arch_finder(text: str, vectors_dict: dict[tuple[float], str], model: Union["UMAP", "PCA", None]) -> str:
     """
     Identify the closest archetype vector from a dictionary using cosine distance.
 

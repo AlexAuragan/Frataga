@@ -42,6 +42,6 @@ def get_meilisearch(project_name):
     return all_docs
 
 if __name__ == '__main__':
-    # push_into_meilisearch("data_format.json", _project_name)
-    out = get_meilisearch(_project_name)
-    print(out)
+    push_into_meilisearch("data_format.json", _project_name)
+    # out = get_meilisearch(_project_name)
+    # print(out)
