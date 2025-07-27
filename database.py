@@ -9,9 +9,13 @@ from PIL import Image
 import requests
 from io import BytesIO
 
+from meilisearch.index import Index
+
 load_dotenv()
 _bucket_name = "archetypes"
 _meilisearch_index = "archetypes"
+client = meilisearch.Client(os.environ.get("MEILISEARCH_URL"), os.environ.get("MEILISEARCH_PASSWORD"))
+index = client.index(_meilisearch_index)
 
 s3 = boto3.client(
     's3',
@@ -62,8 +66,8 @@ def get_palette_from_key(key: str):
     return Image.open(BytesIO(response.content))
 
 
-def get_all_archetypes(meilisearch_index: str = None) -> set[str]:
-    def document_keys_generator(index, batch_size=100):
+def get_all_archetypes() -> set[str]:
+    def document_keys_generator(batch_size=100):
         offset = 0
         seen_keys = set()
         while True:
@@ -76,18 +80,15 @@ def get_all_archetypes(meilisearch_index: str = None) -> set[str]:
                     seen_keys.update(new_keys)
                     yield new_keys
             offset += batch_size
-    meilisearch_index = meilisearch_index or _meilisearch_index
-    client = meilisearch.Client(os.environ.get("MEILISEARCH_URL"), os.environ.get("MEILISEARCH_PASSWORD"))
-    index = client.index(meilisearch_index)
 
     all_keys = set()
-    for new_keys in document_keys_generator(index):
+    for new_keys in document_keys_generator():
         print(f"New keys found: {new_keys}")
         all_keys.update(new_keys)
     return all_keys
 
 @lru_cache()
-def get_db_dict(field: str, collection_name:str, meilisearch_index: str = None):
+def get_db_dict(field: str, collection_name:str):
     def field_to_doc_generator(batch_size=100):
         offset = 0
         while True:
@@ -110,19 +111,12 @@ def get_db_dict(field: str, collection_name:str, meilisearch_index: str = None):
                     raise KeyError(f"Field '{field}' not found in document: {doc}")
 
             offset += batch_size
-    meilisearch_index = meilisearch_index or _meilisearch_index
-    client = meilisearch.Client(os.environ.get("MEILISEARCH_URL"), os.environ.get("MEILISEARCH_PASSWORD"))
-    index = client.index(meilisearch_index)
     field_dict = dict()
     for new_keys in field_to_doc_generator():
         for key, val in new_keys.items():
             field_dict[key] = val
     return field_dict
 
-def get_data_from_name(name: str, meilisearch_index: str = None) -> dict:
-    meilisearch_index = meilisearch_index or _meilisearch_index
-    client = meilisearch.Client(os.environ.get("MEILISEARCH_URL"), os.environ.get("MEILISEARCH_PASSWORD"))
-    index = client.index(meilisearch_index)
-
+def get_data_from_name(name: str) -> dict:
     return dict(index.get_document(name))
 

@@ -4,7 +4,6 @@ import meilisearch
 
 from scripts.utils import name_to_key
 
-_project_name = "greek_gods"
 def push_into_meilisearch(data_file: str, project_name: str):
     """
     Push the data into a meilisearch database
@@ -42,6 +41,7 @@ def get_meilisearch(project_name):
     return all_docs
 
 if __name__ == '__main__':
+    _project_name = "frataga"
     push_into_meilisearch("data_format.json", _project_name)
     # out = get_meilisearch(_project_name)
     # print(out)
