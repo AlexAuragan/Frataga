@@ -80,7 +80,7 @@ def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"], collection: str)
     name = data.get("Titre (FR)", data["name"])
     sub_title = data.get("description wiki 1", "")
     sub_title = re.sub(r'\[\d+]', "", sub_title)
-    sub_title = sub_title[0].upper() + sub_title[1:]
+    sub_title = sub_title[0].upper() + sub_title[1:] if sub_title else ""
     description = data["description_fr"]
     tags = data["tags_fr"]
     display_archetype(name=name, description=description, tags=tags, img_path=img_path, palette_path=palette_path,
