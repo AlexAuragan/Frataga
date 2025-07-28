@@ -22,9 +22,9 @@ def gallery():
                 img_path = future.result()
                 all_images[name] = img_path
 
-    c1, c2 = st.columns(nb_col)
+    columns = st.columns(nb_col)
     for i, (name, img) in enumerate(all_images.items()):
-        c = c1 if (i % nb_col == 0) else c2
+        c = columns[i % nb_col]
         with c:
             st.header(name)
             st.image(img)
