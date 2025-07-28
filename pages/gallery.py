@@ -6,6 +6,7 @@ from database import get_image_from_key, get_data_from_name, get_db_dict
 from front.sidebar import sidebar
 
 def gallery():
+    nb_col = 5
     collection = st.session_state["collection"]
     keys_to_names = get_db_dict("name", collection)
     all_images = {}
@@ -21,9 +22,9 @@ def gallery():
                 img_path = future.result()
                 all_images[name] = img_path
 
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns(nb_col)
     for i, (name, img) in enumerate(all_images.items()):
-        c = c1 if (i % 2 == 0) else c2
+        c = c1 if (i % nb_col == 0) else c2
         with c:
             st.header(name)
             st.image(img)
