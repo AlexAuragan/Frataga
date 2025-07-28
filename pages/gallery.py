@@ -6,7 +6,7 @@ from database import get_image_from_key, get_data_from_name, get_db_dict
 from front.sidebar import sidebar
 
 def gallery():
-    nb_col = 5
+    nb_col = 4
     collection = st.session_state["collection"]
     keys_to_names = get_db_dict("name", collection)
     all_images = {}
