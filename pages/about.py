@@ -31,7 +31,7 @@ def about():
 
     st.header("Langue")
     st.text("Étant donné le cadre de notre projet, nous avons fais le choix d'utiliser un vectorizer français "
-            "(Camembert), donc l'application est faite pour être promptée en français. Par conséquent, il est logique"
+            "(CamemBert), donc l'application est faite pour être promptée en français. Par conséquent, il est logique"
             " que le reste du site soit également en français.\n"
             "Nous ne sommes pas fermé à l'idée de traduire l'application et d'en faire une version anglaise, mais il"
             " faut que je besoin s'en fasse ressentir.")
