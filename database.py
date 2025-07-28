@@ -50,7 +50,7 @@ def get_url_from_key(key: str, bucket_name: str = None):
 @st.cache_resource(show_spinner=False)
 def get_image_from_key(key: str):
     os.makedirs(".cache", exist_ok=True)
-    path = Path(".cache") / f"full_{key}.png"
+    path = Path(".cache") / f"full_{key.replace('/', '_')}"
 
     # If the image exists in cache, return it
     if path.exists():
@@ -69,7 +69,7 @@ def get_image_from_key(key: str):
 @st.cache_resource(show_spinner=False)
 def get_palette_from_key(key: str):
     os.makedirs(".cache", exist_ok=True)
-    path = Path(".cache") / f"palette_{key}.png"
+    path = Path(".cache") / f"palette_{key.replace('/', '_')}"
 
     # If the image exists in cache, return it
     if path.exists():
