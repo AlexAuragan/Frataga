@@ -1,5 +1,7 @@
 import concurrent.futures
 import random
+import re
+from pprint import pprint
 from typing import Union, TYPE_CHECKING
 from random import sample
 import streamlit as st
@@ -75,8 +77,12 @@ def prompt_tab(vectors_dict: dict, model: Union["UMAP", "PCA"], collection: str)
             img_path = future_img.result()
             palette_path = future_palette.result()
 
-    name = data["name"]
+    name = data.get("Titre (FR)", data["name"])
+    sub_title = data.get("description wiki 1", "")
+    sub_title = re.sub(r'\[\d+]', "", sub_title)
+    sub_title = sub_title[0].upper() + sub_title[1:]
     description = data["description_fr"]
     tags = data["tags_fr"]
-    display_archetype(name=name, description=description, tags=tags, img_path=img_path, palette_path=palette_path)
+    display_archetype(name=name, description=description, tags=tags, img_path=img_path, palette_path=palette_path,
+                      sub_title=sub_title)
 

@@ -1,4 +1,5 @@
 import concurrent.futures
+import re
 
 import streamlit as st
 
@@ -19,7 +20,11 @@ def selection_tab(names_to_keys: dict) -> None:
             img_path = future_img.result()
             palette_path = future_palette.result()
 
-    name = data["name"]
+    name = data.get("Titre (FR)", data["name"])
+    sub_title = data.get("description wiki 1", "")
+    sub_title = re.sub(r'\[\d+]', "", sub_title)
+    sub_title = sub_title[0].upper() + sub_title[1:]
     description = data["description_fr"]
     tags = data["tags_fr"]
-    display_archetype(name=name, description=description, tags=tags, img_path=img_path, palette_path=palette_path)
+    display_archetype(name=name, description=description, tags=tags, img_path=img_path, palette_path=palette_path,
+                      sub_title=sub_title)
