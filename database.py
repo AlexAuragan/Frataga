@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 import streamlit as st
 import boto3
 from botocore.client import Config
@@ -47,24 +49,41 @@ def get_url_from_key(key: str, bucket_name: str = None):
 
 @st.cache_resource(show_spinner=False)
 def get_image_from_key(key: str):
-    if "images" not in st.session_state:
-        st.session_state["images"] = {}
-    if key in st.session_state["images"]:
-        return st.session_state["images"][key]
+    os.makedirs(".cache", exist_ok=True)
+    path = Path(".cache") / f"full_{key}.png"
+
+    # If the image exists in cache, return it
+    if path.exists():
+        return Image.open(path)
+
+    # Otherwise, download it and save it locally
     url = get_url_from_key(key)
     response = requests.get(url)
-    return Image.open(BytesIO(response.content))
+    image = Image.open(BytesIO(response.content))
 
+    # Save the image to cache
+    image.save(path)
 
+    return image
+
+@st.cache_resource(show_spinner=False)
 def get_palette_from_key(key: str):
-    if "palettes" not in st.session_state:
-        st.session_state["palettes"] = {}
-    if key in st.session_state["palettes"]:
-        return st.session_state["palettes"][key]
+    os.makedirs(".cache", exist_ok=True)
+    path = Path(".cache") / f"palette_{key}.png"
+
+    # If the image exists in cache, return it
+    if path.exists():
+        return Image.open(path)
+
+    # Otherwise, download it and save it locally
     url = get_palette_url_from_key(key)
     response = requests.get(url)
-    return Image.open(BytesIO(response.content))
+    image = Image.open(BytesIO(response.content))
 
+    # Save the image to cache
+    image.save(path)
+
+    return image
 
 def get_all_archetypes() -> set[str]:
     def document_keys_generator(batch_size=100):
@@ -87,7 +106,7 @@ def get_all_archetypes() -> set[str]:
         all_keys.update(new_keys)
     return all_keys
 
-@lru_cache()
+@st.cache_data()
 def get_db_dict(field: str, collection_name:str):
     def field_to_doc_generator(batch_size=100):
         offset = 0
